@@ -16,6 +16,7 @@ limitations under the License.
 
 package org.openqa.selenium.android.library;
 
+
 import android.graphics.Bitmap;
 import android.net.http.SslError;
 import android.os.Message;
