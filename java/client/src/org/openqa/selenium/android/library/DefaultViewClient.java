@@ -16,6 +16,7 @@ limitations under the License.
 
 package org.openqa.selenium.android.library;
 
+import java.net.URL;
 
 import android.graphics.Bitmap;
 import android.net.http.SslError;
@@ -37,6 +38,9 @@ import android.webkit.WebViewClient;
 class DefaultViewClient extends WebViewClient implements DriverProvider {
   private final WebViewClient delegate;
   private WebDriverViewClient wdViewClient;
+  
+  private String username;
+  private String password;
 
   /**
    * Use this constructor if the WebView used does not have custom
@@ -90,7 +94,10 @@ class DefaultViewClient extends WebViewClient implements DriverProvider {
   @Override
   public void onReceivedHttpAuthRequest(WebView view, HttpAuthHandler handler, String host,
       String realm) {
-    delegate.onReceivedHttpAuthRequest(view, handler, host, realm);
+    if(username == null || password == null)
+      delegate.onReceivedHttpAuthRequest(view, handler, host, realm);
+    else
+      handler.proceed(username, password);
   }
 
   @Override
@@ -120,8 +127,17 @@ class DefaultViewClient extends WebViewClient implements DriverProvider {
 
   @Override
   public void onPageStarted(WebView view, String url, Bitmap favicon) {
+    extractBasicAuth(url);
     wdViewClient.onPageStarted(view, url);
     delegate.onPageStarted(view, url, favicon);
+  }
+  
+  private void extractBasicAuth(String url) {
+    try {
+      String[] userInfo = new URL(url).getUserInfo().split(":");
+      username = userInfo[0];
+      password = userInfo[1];
+    } catch (Exception ex) { /*Indicates no basic auth present.*/ }
   }
 
   @Override
